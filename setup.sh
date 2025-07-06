@@ -1,0 +1,6 @@
+
+export LSC_UTILS_DIR=$PWD
+
+export PATH=$LSC_UTILS_DIR/bin:$PATH
+
+export PYTHONPATH=$LSC_UTILS_DIR/src/:$PYTHONPATH
