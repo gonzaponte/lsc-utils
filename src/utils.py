@@ -7,12 +7,12 @@ TRIGGERS = list(range(0,3))
 
 def get_data_path(run):
     host = gethostname()
-    if   host == "frontend1next":
+    if   host == "frontend1next" or host[:4] == "stor" or host[:8] == "analysis":
         return Path(f"/analysis/{run}/hdf5")
     elif host == "admin": # DESMAN
         return Path.home() / f"analysis/{run}/hdf5"
     else:
-        raise RuntimeError("Unknown host!")
+        raise RuntimeError(f"Unknown host: {host}")
 
 
 def select_last_version_in_dir(path: Path):
