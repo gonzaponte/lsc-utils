@@ -22,7 +22,7 @@ parser.add_argument("-f", "--events-file", type=Path         , help="events file
 parser.add_argument("-s", "--start-file" , type=int          , help="start file"  , default=0)
 parser.add_argument("-e", "--end-file"   , type=int          , help="start file"  , default=10**5)
 parser.add_argument("-t", "--trigger"    , type=valid_trigger, help="trigger"     , default="*")
-parser.add_argument("-l", "--ldc"        , type=valid_ldc    , help="ldcs to scan", default="*", nargs="+")
+parser.add_argument("-l", "--ldc"        , type=valid_ldc    , help="ldc to scan" )
 
 args   = parser.parse_args(argv[1:])
 path   = get_data_path(args.run_number) / "data"
@@ -30,16 +30,18 @@ output = path.parent / "selected" / "data"
 if not output.exists():
     output.mkdir(parents=True)
 
-ldcs = LDCS if "*" in args.ldc  else args.ldc
+NEVT_PER_FILE = 100
+ALL_LDCS      = args.ldc == "*"
 
 suffix = args.events_file.suffix
 if   suffix == ".h5" : events_to_store = read_hdf(args.events_file, "/RUN/Selected_events").event.drop_duplicates().values
 elif suffix == ".txt": events_to_store =  loadtxt(args.events_file).flatten()
 else                 : raise ValueError(f"Invalid file extension {suffix}. Valid options: .h5, .txt")
 
-_nevt           = 99
+_nevt           = NEVT_PER_FILE - 1
 _nfile          = -1
 _current        = None
+_current_ldc    = None
 _buffer_size    = None
 _write_pmt_rwf  = None
 _write_sipm_rwf = None
@@ -66,12 +68,15 @@ def evtmap_writer(file):
     return write
 
 def get_writers(buffer_size):
-    global _nevt, _nfile, _current, _write_pmt_rwf, _write_sipm_rwf, _write_run, _write_evtmap
+    global _nevt, _nfile, _current, _current_ldc, _write_pmt_rwf, _write_sipm_rwf, _write_run, _write_evtmap
     _nevt += 1
-    if _nevt == 100:
-        _nfile   += 1
-        _nevt     = 0
-        filename  = output / f"selected_rwf_{args.run_number}_{_nfile:04}.h5"
+    if _nevt == NEVT_PER_FILE:
+        _nfile       += 1
+        _nevt         = 0
+        _current_ldc  = ldc
+        filename      = (f"selected_rwf_{args.run_number}_{_nfile:04}.h5"                if ALL_LDCS else
+                         f"selected_rwf_{args.run_number}_ldc_{args.ldc}_{_nfile:04}.h5" )
+        filename      = output / filename
         if _current:
             _current.flush()
             _current.close()
@@ -103,7 +108,8 @@ def store_event(filename, i):
         write_evt   (args.run_number, evt, ts)
         write_evtmap(evt, filename.stem)
 
-t0 = time()
+ldcs = LDCS if ALL_LDCS else (args.ldc,)
+t0   = time()
 for ldc in ldcs:
     filenames = sorted((path / f"ldc{ldc}").glob(f"run_{args.run_number}_*_ldc{ldc}_trg{args.trigger}.waveforms.h5"))
     for filename in filenames:
