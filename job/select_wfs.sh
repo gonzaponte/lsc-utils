@@ -1,8 +1,8 @@
 #!/bin/bash
-#PBS -N {run_number}_wfs
+#PBS -N wfs_{label}
 #PBS -q short
-#PBS -o /home/shifter/gonzalo/logs/select_wfs_{run_number}.out
-#PBS -e /home/shifter/gonzalo/logs/select_wfs_{run_number}.err
+#PBS -o /home/shifter/gonzalo/logs/select_wfs_{run_number}_{ldc}.out
+#PBS -e /home/shifter/gonzalo/logs/select_wfs_{run_number}_{ldc}.err
 #PBS -l mem=2gb
 
 source /data/software/miniconda/etc/profile.d/conda.sh
@@ -16,4 +16,4 @@ conda activate IC-3.8-2022-04-13
 cd $HOME/gonzalo/lsc-utils
 source setup.sh
 
-python bin/select_wfs.py -r {run_number} -f {file} -t 2
+python bin/select_wfs.py -r {run_number} -f {file} -l {ldc} -t 2
