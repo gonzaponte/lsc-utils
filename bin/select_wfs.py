@@ -17,12 +17,13 @@ from utils import valid_trigger
 
 
 parser = ArgumentParser()
-parser.add_argument("-r", "--run-number" , type=int          , help="run number"  )
-parser.add_argument("-f", "--events-file", type=Path         , help="events file" )
-parser.add_argument("-s", "--start-file" , type=int          , help="start file"  , default=0)
-parser.add_argument("-e", "--end-file"   , type=int          , help="start file"  , default=10**5)
-parser.add_argument("-t", "--trigger"    , type=valid_trigger, help="trigger"     , default="*")
-parser.add_argument("-l", "--ldc"        , type=valid_ldc    , help="ldc to scan" )
+parser.add_argument("-r", "--run-number"   , type=int          , help="run number"                  )
+parser.add_argument("-f", "--events-file"  , type=Path         , help="events file"                 )
+parser.add_argument("-i", "--initial-index", type=int          , help="start index for output files", default=0)
+parser.add_argument("-s", "--start-file"   , type=int          , help="first file number"           , default=0)
+parser.add_argument("-e", "--end-file"     , type=int          , help="last  file number"           , default=10**5)
+parser.add_argument("-t", "--trigger"      , type=valid_trigger, help="trigger"                     , default="*")
+parser.add_argument("-l", "--ldc"          , type=valid_ldc    , help="ldc to scan"                 )
 
 args   = parser.parse_args(argv[1:])
 path   = get_data_path(args.run_number) / "data"
@@ -38,8 +39,8 @@ if   suffix == ".h5" : events_to_store = read_hdf(args.events_file, "/RUN/Select
 elif suffix == ".txt": events_to_store =  loadtxt(args.events_file).flatten()
 else                 : raise ValueError(f"Invalid file extension {suffix}. Valid options: .h5, .txt")
 
-_nevt           = NEVT_PER_FILE - 1
-_nfile          = -1
+_nevt           = NEVT_PER_FILE      - 1
+_nfile          = args.initial_index - 1
 _current        = None
 _current_ldc    = None
 _buffer_size    = None
