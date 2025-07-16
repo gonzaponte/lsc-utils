@@ -29,7 +29,7 @@ args   = parser.parse_args(argv[1:])
 path   = get_data_path(args.run_number) / "data"
 output = path.parent / "selected" / "data"
 if not output.exists():
-    output.mkdir(parents=True)
+    output.mkdir(parents=True, exist_ok=True)
 
 NEVT_PER_FILE = 100
 ALL_LDCS      = args.ldc == "*"
