@@ -31,4 +31,5 @@ for ldc in LDCS:
     while process.poll() is None:
         sleep(.1)
 
-    print(process.stdout.read().decode() + process.stderr.read().decode())
+    print(process.stdout.read().decode().strip())
+    print(process.stderr.read().decode().strip())
